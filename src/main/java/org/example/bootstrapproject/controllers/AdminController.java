@@ -1,97 +1,92 @@
 package org.example.bootstrapproject.controllers;
 
 import org.example.bootstrapproject.model.Person;
+import org.example.bootstrapproject.model.Role;
 import org.example.bootstrapproject.services.AdminService;
-import org.example.bootstrapproject.services.UserDataValidationService;
-import org.example.bootstrapproject.validators.MyDataValidator;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import org.example.bootstrapproject.services.RoleService;
+import org.example.bootstrapproject.validators.PersonValidator;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.security.Principal;
+import java.util.Collection;
 import java.util.List;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
 
-
-@Controller
-@RequestMapping("/admin")
+@RestController
+@RequestMapping("/api/admin")
 public class AdminController {
 
-    private static final Logger LOGGER = LogManager.getLogger(AdminController.class.getName());
 
     private final AdminService adminService;
-    private final MyDataValidator myDataValidator;
-    private final UserDataValidationService userDataValidationService;
+    private final RoleService roleService;
+    private final PersonValidator personValidator;
 
-
-    @Autowired
-    public AdminController(AdminService adminService, MyDataValidator myDataValidator, UserDataValidationService userDataValidationService) {
+    public AdminController(AdminService adminService, RoleService roleService, PersonValidator personValidator) {
         this.adminService = adminService;
-        this.myDataValidator = myDataValidator;
-        this.userDataValidationService = userDataValidationService;
+        this.roleService = roleService;
+        this.personValidator = personValidator;
     }
 
 
-    @GetMapping()
-    public String showAllUsers(Model model, Principal principal) {
-        Person person = adminService.findByEmail(principal.getName());
-        model.addAttribute("currentUser", person);
-        List<Person> listOfUsers = adminService.getAllUsers();
-        model.addAttribute("listOfUsers", listOfUsers);
-        model.addAttribute("person", new Person());
-        model.addAttribute("allErrors", myDataValidator.getAllErrorsAsString());
-        return "admin/users";
+    @GetMapping("/showAccount")
+    public ResponseEntity<Person> showInfoUser(Principal principal) {
+        System.out.println(principal.getName());
+        return new ResponseEntity<>(adminService.findByEmail(principal.getName()), HttpStatus.OK);
     }
 
-
-    @GetMapping("/new")
-    public String showNewUserForm(Model model) {
-        model.addAttribute("person", new Person());
-        return "/admin/new";
+    @GetMapping("/users")
+    public ResponseEntity<List<Person>> getAllUsers() {
+        return new ResponseEntity<>(adminService.getAllUsers(), HttpStatus.OK);
     }
 
-
-    @PostMapping("")
-    public String createUser(@ModelAttribute @Valid Person user,
-                             @RequestParam(value = "roles", required = false)
-                             @Valid List<String> roles,
-                             Model model) {
-
-        String allErrors = userDataValidationService.validateUserData(user, roles, model);
-
-        if (!allErrors.isEmpty()) {
-            return "redirect:/admin";
-        }
-        adminService.create(user, roles);
-        return "redirect:/admin";
+    @GetMapping("/users/{id}")
+    public ResponseEntity<Person> getUserById(@PathVariable("id") Long id) {
+        Person person = adminService.findOneById(id);
+        return new ResponseEntity<>(person, HttpStatus.OK);
     }
 
+    @GetMapping("/roles")
+    public ResponseEntity<Collection<Role>> getAllRoles() {
+        return new ResponseEntity<>(roleService.getRoles(), HttpStatus.OK);
+    }
 
+    @GetMapping("/roles/{id}")
+    public ResponseEntity<Collection<Role>> getRole(@PathVariable("id") Long id) {
+        return new ResponseEntity<>(adminService.findOneById(id).getRoles(), HttpStatus.OK);
+    }
 
-    @PostMapping("/user/edit")
-    public String update(@ModelAttribute("person") @Valid Person person,
-                         @RequestParam(value = "role", required = false) @Valid List<String> role,
-                         Model model) {
+    @PostMapping("/users")
+    public ResponseEntity<?> addNewUser(@RequestBody @Valid Person newUser, BindingResult bindingResult) {
 
-        LOGGER.info(person.getPassword());
-        LOGGER.info(person.getEmail());
-        String allErrors = userDataValidationService.validateUserData(person, role, model);
+        personValidator.validate(newUser, bindingResult);
 
-
-        if (!allErrors.isEmpty()) {
-            return "redirect:/admin";
+        if (bindingResult.hasErrors()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(bindingResult.getAllErrors());
         }
 
-        adminService.updateUser(person, role);
-        return "redirect:/admin";
+        adminService.create(newUser);
+        return new ResponseEntity<>(newUser, HttpStatus.OK);
     }
 
-    @PostMapping("/user/delete")
-    public String delete(@RequestParam Long id) {
+    @PatchMapping("/users/{id}")
+    public ResponseEntity<?> update(@RequestBody @Valid Person updatedPerson, BindingResult bindingResult) {
+
+        personValidator.validate(updatedPerson, bindingResult);
+
+        if (bindingResult.hasErrors()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(bindingResult.getAllErrors());
+        }
+
+        adminService.updateUser(updatedPerson);
+        return ResponseEntity.ok("User updated successfully");
+    }
+
+    @DeleteMapping("/users/{id}")
+    public ResponseEntity<String> delete(@PathVariable Long id) {
         adminService.removeUser(id);
-        return "redirect:/admin";
+        return new ResponseEntity<>("User with id " + id + " was deleted", HttpStatus.OK);
     }
 }

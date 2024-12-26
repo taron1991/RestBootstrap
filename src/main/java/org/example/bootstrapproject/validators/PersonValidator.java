@@ -12,6 +12,7 @@ import java.util.Optional;
 @Component
 public class PersonValidator implements Validator {
 
+
     private final AdminService adminService;
 
     public PersonValidator(AdminService adminService) {
@@ -27,18 +28,16 @@ public class PersonValidator implements Validator {
     public void validate(Object target, Errors errors) {
         Person person = (Person) target;
 
-
         Optional<Person> existingPerson = adminService.doesPersonExist(person.getEmail());
+
         if (existingPerson.isPresent()  && person.getId() != existingPerson.get().getId()) {
             String errMsg = String.format("Email %s is not unique", existingPerson.get().getEmail());
             errors.rejectValue("email", "duplicate.email", errMsg);
         }
 
-
         if (person.getAge() != null && person.getAge() < 0) {
             errors.rejectValue("age", "negative.number", "Age must be a non-negative number");
         }
-
 
         if (person.getFirstName() == null || person.getFirstName().trim().isEmpty()) {
             errors.rejectValue("firstName", "NotEmpty", "FirstName should not be empty");
@@ -47,5 +46,10 @@ public class PersonValidator implements Validator {
         if (person.getLastName() == null || person.getLastName().trim().isEmpty()) {
             errors.rejectValue("lastName", "NotEmpty", "LastName should not be empty");
         }
+
+        if (person.getRoles() == null || person.getRoles().isEmpty()) {
+            errors.rejectValue("roles", "NotEmpty", "The role should not be empty");
+        }
+
     }
 }

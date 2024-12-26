@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import javax.persistence.EntityNotFoundException;
 
 
 import java.util.*;
@@ -102,39 +103,23 @@ public class AdminServiceImpl implements AdminService {
         return user.get();
     }
 
-    public void create(Person person, List<String> roles) {
-        Set<Role> roleSet = roles.stream()
-                .map(Long::valueOf)
-                .map(roleRepository::findById)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(Collectors.toSet());
-        person.setRoles(roleSet);
+    public void create(Person person) {
         person.setPassword(passwordEncoder.encode(person.getPassword()));
         peopleRepository.save(person);
     }
 
-    /**
-     * Обновляет информацию о пользователе и его ролях.
-     *
-     * @param person Обновленный объект Person.
-     * @param roles  Список строковых идентификаторов ролей.
-     */
-    @Override
-    public void updateUser(Person person, List<String> roles) {
-        Person beforeUpdate = peopleRepository.getById(person.getId());
+    public void updateUser(Person updatedPerson) {
 
-        if (person.getPassword().isEmpty()){
-            person.setPassword(passwordEncoder.encode(beforeUpdate.getPassword()));
-        }
-        Set<Role> roleSet = roles.stream()
-                .map(Long::valueOf)
-                .map(roleRepository::findById)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(Collectors.toSet());
-        person.setRoles(roleSet);
-        person.setPassword(passwordEncoder.encode(person.getPassword()));
-        peopleRepository.save(person);
+        Person existingPerson = peopleRepository.findById(updatedPerson.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Person not found with id: " + updatedPerson.getId()));
+
+        existingPerson.setAge(updatedPerson.getAge());
+        existingPerson.setEmail(updatedPerson.getEmail());
+        existingPerson.setFirstName(updatedPerson.getFirstName());
+        existingPerson.setLastName(updatedPerson.getLastName());
+        existingPerson.setLastName(updatedPerson.getLastName());
+        existingPerson.setPassword(passwordEncoder.encode(updatedPerson.getPassword()));
+        existingPerson.setRoles(updatedPerson.getRoles());
+        peopleRepository.save(existingPerson);
     }
 }

@@ -37,5 +37,8 @@ public class PeopleService {
     public Optional<Person> loadUserByUsername(String username) throws UsernameNotFoundException {
         return peopleRepository.findByFirstNameWithRoles(username);
     }
+    public Optional<Person> findUserByEmail(String email) {
+        return peopleRepository.findByEmailWithRoles(email);
+    }
 
 }
