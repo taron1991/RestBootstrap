@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface PeopleRepository extends JpaRepository<Person, Long> {
+public interface PersonRepository extends JpaRepository<Person, Long> {
 
     @Query("SELECT DISTINCT p FROM Person p LEFT JOIN FETCH p.roles WHERE p.email = :email")
     Optional<Person> findByEmailWithRoles(String email);

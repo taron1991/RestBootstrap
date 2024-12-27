@@ -1,7 +1,7 @@
 package org.example.bootstrapproject.controllers;
 
 import org.example.bootstrapproject.model.Person;
-import org.example.bootstrapproject.services.PeopleService;
+import org.example.bootstrapproject.services.PersonService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,17 +15,17 @@ import java.security.Principal;
 @RequestMapping("/api/user")
 public class RestUserController {
 
-    private final PeopleService peopleService;
+    private final PersonService personService;
 
-    public RestUserController(PeopleService peopleService) {
-        this.peopleService = peopleService;
+    public RestUserController(PersonService personService) {
+        this.personService = personService;
     }
 
 
     @GetMapping("/showAccount")
     public ResponseEntity<Person> showUserAccount(Principal principal) {
         System.out.println();
-        Person person = peopleService.findUserByEmail(principal.getName()).get();
+        Person person = personService.findUserByEmail(principal.getName()).get();
         System.out.println();
         return new ResponseEntity<>(person, HttpStatus.OK);
     }

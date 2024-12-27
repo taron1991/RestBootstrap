@@ -1,8 +1,7 @@
 package org.example.bootstrapproject.services;
 
 import org.example.bootstrapproject.model.Person;
-import org.example.bootstrapproject.model.Role;
-import org.example.bootstrapproject.repo.PeopleRepository;
+import org.example.bootstrapproject.repo.PersonRepository;
 import org.example.bootstrapproject.repo.RoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -13,7 +12,6 @@ import javax.persistence.EntityNotFoundException;
 
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Реализация сервиса для администраторских операций с пользователями.
@@ -22,20 +20,20 @@ import java.util.stream.Collectors;
 @Transactional
 public class AdminServiceImpl implements AdminService {
 
-    private final PeopleRepository peopleRepository;
+    private final PersonRepository personRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
 
     /**
      * Конструктор сервиса.
      *
-     * @param peopleRepository Репозиторий для работы с пользователями.
+     * @param personRepository Репозиторий для работы с пользователями.
      * @param roleRepository   Репозиторий для работы с ролями.
      * @param passwordEncoder  кодировка пароля.
      */
     @Autowired
-    public AdminServiceImpl(PeopleRepository peopleRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
-        this.peopleRepository = peopleRepository;
+    public AdminServiceImpl(PersonRepository personRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
+        this.personRepository = personRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
     }
@@ -47,7 +45,7 @@ public class AdminServiceImpl implements AdminService {
      */
     @Override
     public List<Person> getAllUsers() {
-        return peopleRepository.findAllWithRoles();
+        return personRepository.findAllWithRoles();
     }
 
     /**
@@ -59,14 +57,14 @@ public class AdminServiceImpl implements AdminService {
      */
     @Override
     public Person findUserByFirstName(String name) {
-        Optional<Person> user = peopleRepository.findByFirstNameWithRoles(name);
+        Optional<Person> user = personRepository.findByFirstNameWithRoles(name);
         if (user.isEmpty())
             throw new UsernameNotFoundException("User " + name + " not found");
         return user.get();
     }
 
     public Optional<Person> doesPersonExist(String email) {
-        return peopleRepository.findByEmailWithRoles(email);
+        return personRepository.findByEmailWithRoles(email);
     }
 
 
@@ -77,7 +75,7 @@ public class AdminServiceImpl implements AdminService {
      */
     @Override
     public void removeUser(Long id) {
-        peopleRepository.delete(peopleRepository.getById(id));
+        personRepository.delete(personRepository.getById(id));
     }
 
     /**
@@ -89,7 +87,7 @@ public class AdminServiceImpl implements AdminService {
      */
     @Override
     public Person findOneById(Long id) {
-        Optional<Person> user = peopleRepository.findByPersonIdWithRoles(id);
+        Optional<Person> user = personRepository.findByPersonIdWithRoles(id);
         if (user.isEmpty())
             throw new UsernameNotFoundException("User not found");
         return user.get();
@@ -97,7 +95,7 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public Person findByEmail(String email) {
-        Optional<Person> user = peopleRepository.findByEmailWithRoles(email);
+        Optional<Person> user = personRepository.findByEmailWithRoles(email);
         if (user.isEmpty())
             throw new UsernameNotFoundException("User not found");
         return user.get();
@@ -105,12 +103,12 @@ public class AdminServiceImpl implements AdminService {
 
     public void create(Person person) {
         person.setPassword(passwordEncoder.encode(person.getPassword()));
-        peopleRepository.save(person);
+        personRepository.save(person);
     }
 
     public void updateUser(Person updatedPerson) {
 
-        Person existingPerson = peopleRepository.findById(updatedPerson.getId())
+        Person existingPerson = personRepository.findById(updatedPerson.getId())
                 .orElseThrow(() -> new EntityNotFoundException("Person not found with id: " + updatedPerson.getId()));
 
         existingPerson.setAge(updatedPerson.getAge());
@@ -120,6 +118,6 @@ public class AdminServiceImpl implements AdminService {
         existingPerson.setLastName(updatedPerson.getLastName());
         existingPerson.setPassword(passwordEncoder.encode(updatedPerson.getPassword()));
         existingPerson.setRoles(updatedPerson.getRoles());
-        peopleRepository.save(existingPerson);
+        personRepository.save(existingPerson);
     }
 }

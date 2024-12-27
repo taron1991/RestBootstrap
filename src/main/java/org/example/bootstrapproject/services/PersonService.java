@@ -1,7 +1,7 @@
 package org.example.bootstrapproject.services;
 
 import org.example.bootstrapproject.model.Person;
-import org.example.bootstrapproject.repo.PeopleRepository;
+import org.example.bootstrapproject.repo.PersonRepository;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,17 +14,17 @@ import java.util.Optional;
  */
 @Service
 @Transactional
-public class PeopleService {
+public class PersonService {
 
-    private final PeopleRepository peopleRepository;
+    private final PersonRepository personRepository;
 
     /**
      * Конструктор сервиса.
      *
-     * @param peopleRepository Репозиторий для работы с пользователями.
+     * @param personRepository Репозиторий для работы с пользователями.
      */
-    public PeopleService(PeopleRepository peopleRepository) {
-        this.peopleRepository = peopleRepository;
+    public PersonService(PersonRepository personRepository) {
+        this.personRepository = personRepository;
     }
 
     /**
@@ -35,10 +35,10 @@ public class PeopleService {
      * @throws UsernameNotFoundException если пользователь не найден.
      */
     public Optional<Person> loadUserByUsername(String username) throws UsernameNotFoundException {
-        return peopleRepository.findByFirstNameWithRoles(username);
+        return personRepository.findByFirstNameWithRoles(username);
     }
     public Optional<Person> findUserByEmail(String email) {
-        return peopleRepository.findByEmailWithRoles(email);
+        return personRepository.findByEmailWithRoles(email);
     }
 
 }

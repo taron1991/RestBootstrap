@@ -2,7 +2,7 @@ package org.example.bootstrapproject.services;
 
 import org.example.bootstrapproject.model.Person;
 import org.example.bootstrapproject.model.Role;
-import org.example.bootstrapproject.repo.PeopleRepository;
+import org.example.bootstrapproject.repo.PersonRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,13 +17,13 @@ import java.util.Set;
 @Transactional
 public class RegistrationService {
 
-    private final PeopleRepository peopleRepository;
+    private final PersonRepository personRepository;
     private final PasswordEncoder passwordEncoder;
     private final RoleService roleService;
 
     @Autowired
-    public RegistrationService(@Lazy PeopleRepository peopleRepository, PasswordEncoder passwordEncoder, RoleService roleService) {
-        this.peopleRepository = peopleRepository;
+    public RegistrationService(@Lazy PersonRepository personRepository, PasswordEncoder passwordEncoder, RoleService roleService) {
+        this.personRepository = personRepository;
         this.passwordEncoder = passwordEncoder;
         this.roleService = roleService;
     }
@@ -31,7 +31,7 @@ public class RegistrationService {
     public void registerAdmin(Person person) {
         String[] roles = new String[]{"ROLE_ADMIN"};
         setUserRoles(person, roles);
-        peopleRepository.save(person);
+        personRepository.save(person);
     }
 
     public void registerUser(Person person) {
@@ -39,7 +39,7 @@ public class RegistrationService {
         String[] roles = new String[]{"ROLE_USER"};
         setUserRoles(person, roles);
 
-        peopleRepository.save(person);
+        personRepository.save(person);
     }
 
     private void setUserRoles(Person person, String[] rolesNames) {

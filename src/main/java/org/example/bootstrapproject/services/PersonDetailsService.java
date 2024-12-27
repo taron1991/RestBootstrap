@@ -1,7 +1,7 @@
 package org.example.bootstrapproject.services;
 
 import org.example.bootstrapproject.model.Person;
-import org.example.bootstrapproject.repo.PeopleRepository;
+import org.example.bootstrapproject.repo.PersonRepository;
 import org.example.bootstrapproject.security.PersonDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,16 +18,16 @@ import java.util.Optional;
 @Service
 public class PersonDetailsService implements UserDetailsService {
 
-    private final PeopleRepository peopleRepository;
+    private final PersonRepository personRepository;
 
     /**
      * Конструктор сервиса.
      *
-     * @param peopleRepository Репозиторий для работы с пользователями.
+     * @param personRepository Репозиторий для работы с пользователями.
      */
     @Autowired
-    public PersonDetailsService(PeopleRepository peopleRepository) {
-        this.peopleRepository = peopleRepository;
+    public PersonDetailsService(PersonRepository personRepository) {
+        this.personRepository = personRepository;
     }
 
     /**
@@ -39,7 +39,7 @@ public class PersonDetailsService implements UserDetailsService {
      */
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        Optional<Person> personOptional = peopleRepository.findByEmailWithRoles(email);
+        Optional<Person> personOptional = personRepository.findByEmailWithRoles(email);
 
         if (personOptional.isEmpty()) {
             throw new UsernameNotFoundException("User not found!");
